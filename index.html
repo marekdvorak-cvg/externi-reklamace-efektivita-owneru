@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Efektivita ownerů reklamací</title>
+<style>
+:root {
+  color-scheme: light;
+  --font-anthropic-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+  --font-anthropic-serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --color-bg: #f7f6f2; --color-panel: #ffffff; --color-fg: #1f1e1b; --color-fg-muted: #6b6860;
+  --color-border-line: #e3e0d8; --color-ok: #1a7f4b; --color-warn: #b7791f; --color-bad: #c0392b;
+  --cds-gap-xs: 4px; --cds-gap-sm: 8px; --cds-gap-md: 16px; --cds-gap-lg: 24px; --cds-gap-xl: 32px;
+  --cds-pad-xs: 4px; --cds-pad-sm: 8px; --cds-pad-md: 12px; --cds-pad-lg: 20px;
+  --cds-radius: 8px; --cds-font-weight-medium: 600;
+  --cds-font-size-caption: 12px; --cds-font-size-body: 14px; --cds-font-size-heading: 16px; --cds-font-size-title: 28px;
+  --cds-dur-slow: .6s; --cds-ease-out: cubic-bezier(.2,.8,.2,1);
+  --cds-chart-grid: #ece9e2; --cds-chart-axis: #b9b5ab; --cds-chart-reference: #8a867c; --cds-chart-muted: #b8b5ad;
+  --cds-surface-popover: #ffffff; --cds-border: #e3e0d8; --cds-shadow-popover: 0 6px 20px rgba(0,0,0,.12); --cds-text-secondary: #6b6860;
+  --s0: #2f6fdf; --s1: #e8730c; --s2: #12a37a; --s3: #7c5ce6; --s4: #d4a106; --s5: #d6457a; --s6: #4a90a4; --s7: #8a6d5b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --color-bg: #191917; --color-panel: #23221f; --color-fg: #ecebe6; --color-fg-muted: #a19e95;
+    --color-border-line: #3a3833; --color-ok: #4cc38a; --color-warn: #e0b04a; --color-bad: #ef6b5c;
+    --cds-chart-grid: #34322d; --cds-chart-axis: #5c5952; --cds-chart-reference: #8f8b82; --cds-chart-muted: #6d6a63;
+    --cds-surface-popover: #2b2a26; --cds-border: #3a3833; --cds-shadow-popover: 0 6px 20px rgba(0,0,0,.5); --cds-text-secondary: #a19e95;
+    --s0: #6b9cf2; --s1: #f59547; --s2: #3cc79c; --s3: #a28bf2; --s4: #e8c13f; --s5: #ee77a0; --s6: #74b4c7; --s7: #b4927c;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); }
+#dash-root { max-width: 1280px; margin: 0 auto; padding: 32px 16px 48px; }
+.lx-stamp { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: 4px 10px; background: var(--color-panel); }
+.lx-foot { margin-top: 32px; font-size: 12px; color: var(--color-fg-muted); }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>
+window.DASH_DATA = {"opened_daily": [{"owner": "Kryštof Veber", "day": "2026-09-01", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-09-01", "cnt": 3}, {"owner": "Pavel Tran Son", "day": "2026-09-01", "cnt": 3}, {"owner": "Kryštof Veber", "day": "2026-09-02", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-09-02", "cnt": 6}, {"owner": "Kryštof Veber", "day": "2026-09-03", "cnt": 3}, {"owner": "Marco Antonio Sinica", "day": "2026-09-03", "cnt": 4}, {"owner": "Pavel Tran Son", "day": "2026-09-03", "cnt": 4}, {"owner": "Kryštof Veber", "day": "2026-09-04", "cnt": 2}, {"owner": "Pavel Tran Son", "day": "2026-09-04", "cnt": 3}, {"owner": "Marco Antonio Sinica", "day": "2026-09-07", "cnt": 5}, {"owner": "Pavel Tran Son", "day": "2026-09-07", "cnt": 6}, {"owner": "Kryštof Veber", "day": "2026-09-08", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-09-08", "cnt": 4}, {"owner": "Marco Antonio Sinica", "day": "2026-09-09", "cnt": 8}, {"owner": "Pavel Tran Son", "day": "2026-09-09", "cnt": 3}, {"owner": "Kryštof Veber", "day": "2026-09-10", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-09-10", "cnt": 1}, {"owner": "Kryštof Veber", "day": "2026-09-11", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-09-11", "cnt": 3}, {"owner": "Pavel Tran Son", "day": "2026-09-11", "cnt": 7}, {"owner": "Marco Antonio Sinica", "day": "2026-09-13", "cnt": 2}, {"owner": "Marco Antonio Sinica", "day": "2026-09-14", "cnt": 8}, {"owner": "Pavel Tran Son", "day": "2026-09-14", "cnt": 8}, {"owner": "Kryštof Veber", "day": "2026-09-15", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-09-15", "cnt": 6}, {"owner": "Pavel Tran Son", "day": "2026-09-15", "cnt": 6}, {"owner": "Marco Antonio Sinica", "day": "2026-09-16", "cnt": 2}, {"owner": "Pavel Tran Son", "day": "2026-09-16", "cnt": 3}, {"owner": "Pavel Tran Son", "day": "2026-09-17", "cnt": 3}, {"owner": "Kryštof Veber", "day": "2026-09-18", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-09-18", "cnt": 3}, {"owner": "Kryštof Veber", "day": "2026-09-21", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-09-21", "cnt": 3}, {"owner": "Pavel Tran Son", "day": "2026-09-21", "cnt": 6}, {"owner": "Kryštof Veber", "day": "2026-09-22", "cnt": 3}, {"owner": "Marco Antonio Sinica", "day": "2026-09-22", "cnt": 4}, {"owner": "Pavel Tran Son", "day": "2026-09-22", "cnt": 4}, {"owner": "Kryštof Veber", "day": "2026-09-23", "cnt": 4}, {"owner": "Marco Antonio Sinica", "day": "2026-09-23", "cnt": 6}, {"owner": "Pavel Tran Son", "day": "2026-09-23", "cnt": 4}, {"owner": "Kryštof Veber", "day": "2026-09-24", "cnt": 2}, {"owner": "Marco Antonio Sinica", "day": "2026-09-24", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-09-24", "cnt": 3}, {"owner": "Marco Antonio Sinica", "day": "2026-09-25", "cnt": 2}, {"owner": "Pavel Tran Son", "day": "2026-09-25", "cnt": 3}, {"owner": "Pavel Tran Son", "day": "2026-09-28", "cnt": 6}, {"owner": "Kryštof Veber", "day": "2026-09-29", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-09-29", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-09-29", "cnt": 2}, {"owner": "Kryštof Veber", "day": "2026-09-30", "cnt": 6}, {"owner": "Marco Antonio Sinica", "day": "2026-09-30", "cnt": 9}, {"owner": "Pavel Tran Son", "day": "2026-09-30", "cnt": 4}, {"owner": "Pavel Tran Son", "day": "2026-10-01", "cnt": 3}, {"owner": "Kryštof Veber", "day": "2026-10-02", "cnt": 3}, {"owner": "Marco Antonio Sinica", "day": "2026-10-02", "cnt": 3}, {"owner": "Pavel Tran Son", "day": "2026-10-02", "cnt": 6}, {"owner": "Kryštof Veber", "day": "2026-10-05", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-10-05", "cnt": 4}, {"owner": "Pavel Tran Son", "day": "2026-10-05", "cnt": 6}, {"owner": "Marco Antonio Sinica", "day": "2026-10-06", "cnt": 4}, {"owner": "Pavel Tran Son", "day": "2026-10-06", "cnt": 3}, {"owner": "Kryštof Veber", "day": "2026-10-07", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-10-07", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-10-07", "cnt": 1}, {"owner": "Kryštof Veber", "day": "2026-10-08", "cnt": 2}, {"owner": "Marco Antonio Sinica", "day": "2026-10-08", "cnt": 4}, {"owner": "Pavel Tran Son", "day": "2026-10-08", "cnt": 2}, {"owner": "Kryštof Veber", "day": "2026-10-09", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-10-09", "cnt": 2}, {"owner": "Kryštof Veber", "day": "2026-10-12", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-10-12", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-10-12", "cnt": 6}, {"owner": "Kryštof Veber", "day": "2026-10-13", "cnt": 4}, {"owner": "Marco Antonio Sinica", "day": "2026-10-13", "cnt": 4}, {"owner": "Pavel Tran Son", "day": "2026-10-13", "cnt": 4}, {"owner": "Kryštof Veber", "day": "2026-10-14", "cnt": 3}, {"owner": "Marco Antonio Sinica", "day": "2026-10-14", "cnt": 3}, {"owner": "Pavel Tran Son", "day": "2026-10-14", "cnt": 3}, {"owner": "Pavel Tran Son", "day": "2026-10-15", "cnt": 3}, {"owner": "Pavel Tran Son", "day": "2026-10-16", "cnt": 4}, {"owner": "Kryštof Veber", "day": "2026-10-19", "cnt": 6}, {"owner": "Marco Antonio Sinica", "day": "2026-10-19", "cnt": 8}, {"owner": "Pavel Tran Son", "day": "2026-10-19", "cnt": 4}, {"owner": "Kryštof Veber", "day": "2026-10-20", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-10-20", "cnt": 2}, {"owner": "Pavel Tran Son", "day": "2026-10-20", "cnt": 5}, {"owner": "Kryštof Veber", "day": "2026-10-21", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-10-21", "cnt": 3}, {"owner": "Pavel Tran Son", "day": "2026-10-21", "cnt": 6}, {"owner": "Kryštof Veber", "day": "2026-10-22", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-10-22", "cnt": 7}, {"owner": "Pavel Tran Son", "day": "2026-10-22", "cnt": 5}, {"owner": "Marco Antonio Sinica", "day": "2026-10-23", "cnt": 4}, {"owner": "Pavel Tran Son", "day": "2026-10-23", "cnt": 2}, {"owner": "Marco Antonio Sinica", "day": "2026-10-26", "cnt": 4}, {"owner": "Pavel Tran Son", "day": "2026-10-26", "cnt": 6}, {"owner": "Marco Antonio Sinica", "day": "2026-10-27", "cnt": 3}, {"owner": "Pavel Tran Son", "day": "2026-10-28", "cnt": 2}, {"owner": "Marco Antonio Sinica", "day": "2026-10-29", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-10-29", "cnt": 2}, {"owner": "Kryštof Veber", "day": "2026-10-30", "cnt": 2}, {"owner": "Marco Antonio Sinica", "day": "2026-10-30", "cnt": 5}, {"owner": "Pavel Tran Son", "day": "2026-10-30", "cnt": 4}, {"owner": "Kryštof Veber", "day": "2026-11-02", "cnt": 4}, {"owner": "Marco Antonio Sinica", "day": "2026-11-02", "cnt": 2}], "closed_daily": [{"owner": "Kryštof Veber", "day": "2026-09-01", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-09-01", "cnt": 3}, {"owner": "Marco Antonio Sinica", "day": "2026-09-02", "cnt": 4}, {"owner": "Pavel Tran Son", "day": "2026-09-02", "cnt": 2}, {"owner": "Kryštof Veber", "day": "2026-09-03", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-09-03", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-09-03", "cnt": 4}, {"owner": "Kryštof Veber", "day": "2026-09-04", "cnt": 2}, {"owner": "Marco Antonio Sinica", "day": "2026-09-04", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-09-04", "cnt": 3}, {"owner": "Kryštof Veber", "day": "2026-09-07", "cnt": 2}, {"owner": "Marco Antonio Sinica", "day": "2026-09-07", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-09-07", "cnt": 4}, {"owner": "Kryštof Veber", "day": "2026-09-08", "cnt": 5}, {"owner": "Marco Antonio Sinica", "day": "2026-09-08", "cnt": 3}, {"owner": "Pavel Tran Son", "day": "2026-09-08", "cnt": 1}, {"owner": "Kryštof Veber", "day": "2026-09-09", "cnt": 2}, {"owner": "Marco Antonio Sinica", "day": "2026-09-09", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-09-09", "cnt": 6}, {"owner": "Marco Antonio Sinica", "day": "2026-09-10", "cnt": 2}, {"owner": "Pavel Tran Son", "day": "2026-09-10", "cnt": 4}, {"owner": "Pavel Tran Son", "day": "2026-09-11", "cnt": 7}, {"owner": "Marco Antonio Sinica", "day": "2026-09-14", "cnt": 7}, {"owner": "Pavel Tran Son", "day": "2026-09-14", "cnt": 5}, {"owner": "Marco Antonio Sinica", "day": "2026-09-15", "cnt": 4}, {"owner": "Pavel Tran Son", "day": "2026-09-15", "cnt": 3}, {"owner": "Marco Antonio Sinica", "day": "2026-09-16", "cnt": 3}, {"owner": "Pavel Tran Son", "day": "2026-09-16", "cnt": 3}, {"owner": "Kryštof Veber", "day": "2026-09-17", "cnt": 3}, {"owner": "Marco Antonio Sinica", "day": "2026-09-17", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-09-17", "cnt": 5}, {"owner": "Marco Antonio Sinica", "day": "2026-09-18", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-09-18", "cnt": 4}, {"owner": "Kryštof Veber", "day": "2026-09-21", "cnt": 2}, {"owner": "Marco Antonio Sinica", "day": "2026-09-21", "cnt": 4}, {"owner": "Pavel Tran Son", "day": "2026-09-21", "cnt": 6}, {"owner": "Kryštof Veber", "day": "2026-09-22", "cnt": 3}, {"owner": "Marco Antonio Sinica", "day": "2026-09-22", "cnt": 4}, {"owner": "Pavel Tran Son", "day": "2026-09-22", "cnt": 2}, {"owner": "Kryštof Veber", "day": "2026-09-23", "cnt": 2}, {"owner": "Marco Antonio Sinica", "day": "2026-09-23", "cnt": 2}, {"owner": "Pavel Tran Son", "day": "2026-09-23", "cnt": 7}, {"owner": "Marco Antonio Sinica", "day": "2026-09-24", "cnt": 7}, {"owner": "Pavel Tran Son", "day": "2026-09-24", "cnt": 6}, {"owner": "Marco Antonio Sinica", "day": "2026-09-25", "cnt": 4}, {"owner": "Pavel Tran Son", "day": "2026-09-25", "cnt": 5}, {"owner": "Marco Antonio Sinica", "day": "2026-09-29", "cnt": 5}, {"owner": "Pavel Tran Son", "day": "2026-09-29", "cnt": 7}, {"owner": "Kryštof Veber", "day": "2026-09-30", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-09-30", "cnt": 3}, {"owner": "Pavel Tran Son", "day": "2026-09-30", "cnt": 6}, {"owner": "Marco Antonio Sinica", "day": "2026-10-01", "cnt": 2}, {"owner": "Pavel Tran Son", "day": "2026-10-01", "cnt": 9}, {"owner": "Marco Antonio Sinica", "day": "2026-10-02", "cnt": 5}, {"owner": "Pavel Tran Son", "day": "2026-10-02", "cnt": 2}, {"owner": "Kryštof Veber", "day": "2026-10-05", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-10-05", "cnt": 2}, {"owner": "Pavel Tran Son", "day": "2026-10-05", "cnt": 3}, {"owner": "Marco Antonio Sinica", "day": "2026-10-06", "cnt": 5}, {"owner": "Pavel Tran Son", "day": "2026-10-06", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-10-07", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-10-07", "cnt": 4}, {"owner": "Kryštof Veber", "day": "2026-10-08", "cnt": 2}, {"owner": "Marco Antonio Sinica", "day": "2026-10-08", "cnt": 4}, {"owner": "Pavel Tran Son", "day": "2026-10-08", "cnt": 7}, {"owner": "Marco Antonio Sinica", "day": "2026-10-09", "cnt": 2}, {"owner": "Pavel Tran Son", "day": "2026-10-09", "cnt": 3}, {"owner": "Marco Antonio Sinica", "day": "2026-10-12", "cnt": 6}, {"owner": "Pavel Tran Son", "day": "2026-10-12", "cnt": 3}, {"owner": "Kryštof Veber", "day": "2026-10-13", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-10-13", "cnt": 2}, {"owner": "Pavel Tran Son", "day": "2026-10-13", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-10-14", "cnt": 3}, {"owner": "Kryštof Veber", "day": "2026-10-15", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-10-15", "cnt": 5}, {"owner": "Pavel Tran Son", "day": "2026-10-15", "cnt": 7}, {"owner": "Pavel Tran Son", "day": "2026-10-16", "cnt": 4}, {"owner": "Kryštof Veber", "day": "2026-10-19", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-10-19", "cnt": 5}, {"owner": "Pavel Tran Son", "day": "2026-10-19", "cnt": 3}, {"owner": "Kryštof Veber", "day": "2026-10-20", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-10-20", "cnt": 3}, {"owner": "Pavel Tran Son", "day": "2026-10-20", "cnt": 3}, {"owner": "Kryštof Veber", "day": "2026-10-21", "cnt": 6}, {"owner": "Marco Antonio Sinica", "day": "2026-10-21", "cnt": 3}, {"owner": "Pavel Tran Son", "day": "2026-10-21", "cnt": 7}, {"owner": "Kryštof Veber", "day": "2026-10-22", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-10-22", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-10-22", "cnt": 2}, {"owner": "Kryštof Veber", "day": "2026-10-23", "cnt": 1}, {"owner": "Marco Antonio Sinica", "day": "2026-10-23", "cnt": 3}, {"owner": "Pavel Tran Son", "day": "2026-10-23", "cnt": 3}, {"owner": "Kryštof Veber", "day": "2026-10-26", "cnt": 2}, {"owner": "Marco Antonio Sinica", "day": "2026-10-26", "cnt": 2}, {"owner": "Pavel Tran Son", "day": "2026-10-26", "cnt": 3}, {"owner": "Kryštof Veber", "day": "2026-10-27", "cnt": 2}, {"owner": "Marco Antonio Sinica", "day": "2026-10-27", "cnt": 6}, {"owner": "Pavel Tran Son", "day": "2026-10-27", "cnt": 3}, {"owner": "Kryštof Veber", "day": "2026-10-29", "cnt": 11}, {"owner": "Marco Antonio Sinica", "day": "2026-10-29", "cnt": 4}, {"owner": "Pavel Tran Son", "day": "2026-10-29", "cnt": 5}, {"owner": "Kryštof Veber", "day": "2026-10-30", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-10-30", "cnt": 3}, {"owner": "Marco Antonio Sinica", "day": "2026-11-02", "cnt": 1}, {"owner": "Pavel Tran Son", "day": "2026-11-02", "cnt": 2}], "closed_stats": [{"owner": "Pavel Tran Son", "cnt": 174, "avgDays": 15.597701149425287, "maxDays": 100, "cost": 43010.03}, {"owner": "Marco Antonio Sinica", "cnt": 120, "avgDays": 11.608333333333333, "maxDays": 99, "cost": 40205.58}, {"owner": "Kryštof Veber", "cnt": 55, "avgDays": 22.454545454545453, "maxDays": 66, "cost": 11383.59}], "closed_30": [{"owner": "Pavel Tran Son", "cnt": 155}, {"owner": "Marco Antonio Sinica", "cnt": 110}, {"owner": "Kryštof Veber", "cnt": 45}], "backlog": [{"owner": "Pavel Tran Son", "cnt": 37}, {"owner": "Marco Antonio Sinica", "cnt": 26}, {"owner": "Kryštof Veber", "cnt": 22}], "backlog_30": [{"owner": "Pavel Tran Son", "cnt": 3}, {"owner": "Marco Antonio Sinica", "cnt": 1}, {"owner": "Kryštof Veber", "cnt": 5}], "done_open": [{"owner": "Kryštof Veber", "cnt": 2}, {"owner": "Pavel Tran Son", "cnt": 1}], "cost_source": [{"owner": "Pavel Tran Son", "source": "vendor", "cnt": 38, "cost": 10941.71, "seller": 5001.34}, {"owner": "Pavel Tran Son", "source": "not-a-problem", "cnt": 131, "cost": 22694.62, "seller": null}, {"owner": "Kryštof Veber", "source": "vendor", "cnt": 1, "cost": 0, "seller": 0}, {"owner": "Pavel Tran Son", "source": "transport", "cnt": 1, "cost": 3997, "seller": null}, {"owner": "Marco Antonio Sinica", "source": "auditor-error", "cnt": 8, "cost": 6967.28, "seller": null}, {"owner": "Pavel Tran Son", "source": "carvago-error", "cnt": 4, "cost": 5376.7, "seller": null}, {"owner": "Kryštof Veber", "source": "not-a-problem", "cnt": 48, "cost": 8992.59, "seller": null}, {"owner": "Marco Antonio Sinica", "source": "not-a-problem", "cnt": 112, "cost": 33238.3, "seller": null}, {"owner": "Kryštof Veber", "source": "auditor-error", "cnt": 5, "cost": 1357.34, "seller": null}, {"owner": "Kryštof Veber", "source": "carvago-error", "cnt": 1, "cost": 1033.66, "seller": null}], "extension": [{"owner": "Kryštof Veber", "ext": "needed", "cnt": 27}, {"owner": "Kryštof Veber", "ext": "none", "cnt": 28}, {"owner": "Marco Antonio Sinica", "ext": "needed", "cnt": 25}, {"owner": "Marco Antonio Sinica", "ext": "none", "cnt": 95}, {"owner": "Pavel Tran Son", "ext": "needed", "cnt": 51}, {"owner": "Pavel Tran Son", "ext": "none", "cnt": 123}], "resolution": [{"owner": "Kryštof Veber", "status": "financially-compensated", "cnt": 19}, {"owner": "Pavel Tran Son", "status": "closed-at-customers-request", "cnt": 25}, {"owner": "Marco Antonio Sinica", "status": "not-acknowledged", "cnt": 76}, {"owner": "Pavel Tran Son", "status": "acknowledged", "cnt": 1}, {"owner": "Kryštof Veber", "status": "repaired", "cnt": 16}, {"owner": "Marco Antonio Sinica", "status": "financially-compensated", "cnt": 20}, {"owner": "Pavel Tran Son", "status": "not-acknowledged", "cnt": 79}, {"owner": "Marco Antonio Sinica", "status": "repaired", "cnt": 34}, {"owner": "Kryštof Veber", "status": "not-acknowledged", "cnt": 19}, {"owner": "Pavel Tran Son", "status": "repaired", "cnt": 47}, {"owner": "Kryštof Veber", "status": "closed-at-customers-request", "cnt": 7}, {"owner": "Pavel Tran Son", "status": "financially-compensated", "cnt": 63}], "cpc_types": [{"owner": "Kryštof Veber", "type": "engine", "cnt": 25}, {"owner": "Kryštof Veber", "type": "other", "cnt": 10}, {"owner": "Kryštof Veber", "type": "interior", "cnt": 2}, {"owner": "Pavel Tran Son", "type": "transmission-drivetrain", "cnt": 3}, {"owner": "Marco Antonio Sinica", "type": "brakes", "cnt": 7}, {"owner": "Pavel Tran Son", "type": "brakes", "cnt": 5}, {"owner": "Marco Antonio Sinica", "type": "transmission-drivetrain", "cnt": 2}, {"owner": "Marco Antonio Sinica", "type": "electronics", "cnt": 19}, {"owner": "Kryštof Veber", "type": "chassis", "cnt": 5}, {"owner": "Pavel Tran Son", "type": "electronics", "cnt": 33}, {"owner": "Kryštof Veber", "type": "compensable", "cnt": 3}, {"owner": "Pavel Tran Son", "type": "engine", "cnt": 27}, {"owner": "Kryštof Veber", "type": "exterior-cosmetics", "cnt": 10}, {"owner": "Marco Antonio Sinica", "type": "interior", "cnt": 8}, {"owner": "Marco Antonio Sinica", "type": "other", "cnt": 22}, {"owner": "Pavel Tran Son", "type": "other", "cnt": 55}, {"owner": "Marco Antonio Sinica", "type": "engine", "cnt": 27}, {"owner": "Pavel Tran Son", "type": "interior", "cnt": 9}, {"owner": "Pavel Tran Son", "type": "exterior-cosmetics", "cnt": 28}, {"owner": "Marco Antonio Sinica", "type": "exterior-cosmetics", "cnt": 17}, {"owner": "Marco Antonio Sinica", "type": "compensable", "cnt": 3}, {"owner": "Marco Antonio Sinica", "type": "chassis", "cnt": 28}, {"owner": "Pavel Tran Son", "type": "chassis", "cnt": 9}, {"owner": "Kryštof Veber", "type": "electronics", "cnt": 9}, {"owner": "Pavel Tran Son", "type": "compensable", "cnt": 27}, {"owner": "Kryštof Veber", "type": "transmission-drivetrain", "cnt": 2}, {"owner": "Kryštof Veber", "type": "brakes", "cnt": 2}]};
+window.dash = (() => {
+  const raw = window.DASH_DATA, calcs = {}, draws = {}, cache = {};
+  const data = (id) => {
+    if (id in raw) return { status: 'ok', data: raw[id], columns: raw[id].length ? Object.keys(raw[id][0]) : [], meta: [] };
+    if (calcs[id]) {
+      if (!(id in cache)) cache[id] = calcs[id].fn(...calcs[id].inputs.map((i) => data(i).data));
+      return { status: 'ok', data: cache[id], meta: [] };
+    }
+    return { status: 'missing', data: [] };
+  };
+  const run = (name) => document.querySelectorAll('[data-draw="' + name + '"]').forEach((el) => draws[name](el));
+  return {
+    data,
+    calc: (id, o) => { calcs[id] = o; },
+    loader: () => {},
+    draw: (name, fn) => { if (fn) draws[name] = fn; else run(name); },
+    onData: (fn) => fn(),
+    refresh: () => {},
+    params: () => ({}), setParams: () => {}, resetParams: () => {}, setLink: () => {},
+    colors: ['var(--s0)', 'var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)', 'var(--s5)', 'var(--s6)', 'var(--s7)'],
+    _runAll: () => Object.keys(draws).forEach(run),
+  };
+})();
+</script>
+</head>
+<body>
+<div id="dash-root">
+<style>
+  .lx { font-family: var(--font-anthropic-sans); color: var(--color-fg); display: grid; gap: var(--cds-gap-xl); font-variant-numeric: tabular-nums; }
+  .lx h1, .lx h2, .lx h3, .lx p { margin: 0; }
+  .lx-head { display: grid; gap: var(--cds-gap-sm); }
+  .lx-kicker { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: .06em; }
+  .lx-head h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); line-height: 1.15; }
+  .lx-take { font-size: var(--cds-font-size-body); color: var(--color-fg-muted); max-width: 52rem; line-height: 1.5; }
+  .lx .lx-take b { color: var(--color-fg); font-weight: 600; }
+  .lx-people { display: grid; gap: var(--cds-gap-md); grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); }
+  .lx-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-md); align-content: start; position: relative; min-width: 0; }
+  .lx-person { border-top: 4px solid var(--c); background: linear-gradient(180deg, color-mix(in srgb, var(--c) 9%, var(--color-panel)) 0, var(--color-panel) 7rem); }
+  .lx-ph { display: flex; align-items: center; gap: var(--cds-gap-sm); }
+  .lx-av { width: 2.5rem; height: 2.5rem; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--c); color: var(--color-bg); font-weight: 600; font-size: var(--cds-font-size-body); letter-spacing: .02em; }
+  .lx-ph h3 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+  .lx-sub, .lx-muted { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+  .lx-big { display: flex; align-items: baseline; gap: var(--cds-gap-sm); }
+  .lx-bign { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: calc(var(--cds-font-size-title) * 1.6); line-height: 1; min-width: 3ch; }
+  .lx-bigl { color: var(--color-fg-muted); font-size: var(--cds-font-size-body); }
+  .lx-stats { display: grid; grid-template-columns: 1fr 1fr; gap: var(--cds-gap-sm) var(--cds-gap-md); margin: 0; }
+  .lx-stats > div { display: grid; gap: 2px; }
+  .lx-stats dt { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .lx-stats dd { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+  .lx-badge.pos { color: var(--color-ok); }
+  .lx-badge.neg { color: var(--color-bad); }
+  .lx-pct { display: grid; gap: var(--cds-gap-xs); }
+  .lx-pct-h { display: flex; justify-content: space-between; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .lx .lx-pct-h b { color: var(--color-fg); font-weight: 600; }
+  .lx-track { height: 8px; border-radius: 999px; background: var(--cds-chart-grid); overflow: hidden; }
+  .lx-fill { height: 100%; width: 0; border-radius: 999px; background: var(--c); }
+  @media (prefers-reduced-motion: no-preference) { .lx-fill { transition: width var(--cds-dur-slow) var(--cds-ease-out); } }
+  .lx-grid2 { display: grid; gap: var(--cds-gap-md); grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); }
+  .lx-ct { display: flex; justify-content: space-between; align-items: start; gap: var(--cds-gap-sm); flex-wrap: wrap; }
+  .lx-ct h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+  .lx-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: 2px; }
+  .lx-seg { display: inline-flex; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); overflow: hidden; }
+  .lx-seg button { font: inherit; font-size: var(--cds-font-size-caption); padding: var(--cds-pad-xs) var(--cds-pad-sm); background: transparent; color: var(--color-fg-muted); border: 0; cursor: pointer; }
+  .lx-seg button[aria-pressed="true"] { background: var(--color-fg); color: var(--color-bg); }
+  .lx-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs) var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .lx-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .lx-legend i, .lx-sw { width: 10px; height: 10px; border-radius: 3px; background: var(--c); display: inline-block; flex: none; }
+  .lx-chart { position: relative; min-height: 260px; }
+  .lx-chart.lx-short { min-height: 172px; }
+  .lx-svg { display: block; overflow: visible; }
+  .lx-grid { stroke: var(--cds-chart-grid); stroke-width: 1; }
+  .lx-axis { stroke: var(--cds-chart-axis); stroke-width: 1; }
+  .lx-ref { stroke: var(--cds-chart-reference); stroke-width: 1.5; stroke-dasharray: 4 4; }
+  .lx-tick { fill: var(--color-fg-muted); font-size: var(--cds-font-size-caption); font-family: var(--font-anthropic-sans); }
+  .lx-lab { fill: var(--color-fg); font-size: var(--cds-font-size-caption); font-family: var(--font-anthropic-sans); font-weight: 600; }
+  .lx-hit { fill: transparent; cursor: default; }
+  .lx-dim { opacity: .35; }
+  .lx-tip { position: absolute; z-index: 2; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); display: grid; gap: 2px; min-width: 9rem; }
+  .lx-tip[hidden] { display: none; }
+  .lx-tip-h { color: var(--cds-text-secondary); }
+  .lx-tip-r { display: flex; align-items: center; gap: 6px; }
+  .lx-tip-r b { margin-left: auto; padding-left: var(--cds-pad-sm); }
+  .lx-fail { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+  .lx-fail-dot { width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+  .lx-tablebox { overflow-x: auto; }
+  .lx-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-body); }
+  .lx-table th { text-align: right; font-weight: var(--cds-font-weight-medium); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+  .lx-table td { text-align: right; padding: var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+  .lx-table th:first-child, .lx-table td:first-child { text-align: left; }
+  .lx-table td.neg { color: var(--color-bad); font-weight: 600; }
+  .lx-table td.pos { color: var(--color-ok); font-weight: 600; }
+  .lx-own { display: inline-flex; align-items: center; gap: 8px; }
+  .lx-titlerow { display: flex; align-items: center; justify-content: space-between; gap: var(--cds-gap-md); flex-wrap: wrap; }
+  .lx-refresh { font: inherit; font-size: var(--cds-font-size-caption); padding: var(--cds-pad-xs) var(--cds-pad-md); border-radius: var(--cds-radius); border: 1px solid var(--color-border-line); background: var(--color-panel); color: var(--color-fg); cursor: pointer; }
+  .lx-refresh:hover { background: var(--color-fg); color: var(--color-bg); }
+  .lx-refresh:disabled { opacity: .5; cursor: default; }
+  .lx-sec { display: grid; gap: var(--cds-gap-md); }
+  .lx-sech { display: grid; gap: 2px; padding-top: var(--cds-pad-sm); border-top: 1px solid var(--color-border-line); }
+  .lx-sech h2 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); }
+  .lx-sech p { color: var(--color-fg-muted); font-size: var(--cds-font-size-body); }
+  .lx-full { grid-column: 1 / -1; }
+  .lx-costs { display: grid; gap: var(--cds-gap-md); grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); }
+  .lx-cost { border-left: 4px solid var(--c); padding: var(--cds-pad-xs) 0 var(--cds-pad-xs) var(--cds-pad-md); display: grid; gap: var(--cds-gap-xs); }
+  .lx-cost-n { font-family: var(--font-anthropic-serif); font-size: var(--cds-font-size-title); line-height: 1.1; }
+  .lx-cost-l { display: flex; justify-content: space-between; gap: var(--cds-gap-sm); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .lx .lx-cost-l b { color: var(--color-fg); font-weight: 600; }
+  .lx-callout { font-size: var(--cds-font-size-body); background: color-mix(in srgb, var(--color-warn) 10%, transparent); border-radius: var(--cds-radius); padding: var(--cds-pad-sm) var(--cds-pad-md); line-height: 1.5; }
+  .lx .lx-callout b { font-weight: 600; }
+  .lx-heat td { min-width: 6.5rem; }
+  .lx-heat td.lx-cell { border-left: 2px solid var(--color-panel); }
+  .lx-heat .lx-pctl { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); margin-left: 4px; }
+  .lx-method { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.6; display: grid; gap: var(--cds-gap-xs); }
+  .lx-method h2 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); color: var(--color-fg); }
+  .lx-method ul { margin: 0; padding-left: 1.1rem; }
+  [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+</style>
+
+<div class="lx">
+  <header class="lx-head" id="prehled">
+    <p class="lx-kicker">Externí reklamace · 1. 9. 2026 – 2. 11. 2026 · data ze Salesforce, stav k 2. 11. 2026, 10:20</p>
+    <div class="lx-titlerow"><h1>Efektivita ownerů reklamací</h1><span class="lx-stamp">Stav k 2. 11. 2026, 10:20</span></div>
+    <p class="lx-take">Nejvíc reklamací uzavřel <b data-draw="m" data-source="highlights" data-field="mostClosed" data-row="0" data-fmt="text" class="dash-skeleton">—</b>, nejrychleji vyřizuje <b data-draw="m" data-source="highlights" data-field="fastest" data-row="0" data-fmt="text" class="dash-skeleton">—</b> a nejvíc se reklamace hromadí u <b data-draw="m" data-source="highlights" data-field="worstBalance" data-row="0" data-fmt="text" class="dash-skeleton">—</b>.</p>
+  </header>
+
+  <section class="lx-people" id="lide" aria-label="Owneři">
+    <article class="lx-card lx-person" id="pavel" data-oi="0">
+      <header class="lx-ph"><span class="lx-av">PT</span><div><h3>Pavel Tran Son</h3><p class="lx-sub">Od 1. 9. 2026</p></div></header>
+      <div class="lx-big"><span class="lx-bign dash-skeleton" data-draw="m" data-source="scorecard" data-field="closed" data-where="owner=Pavel Tran Son" data-fmt="int">—</span><span class="lx-bigl">uzavřených reklamací</span></div>
+      <dl class="lx-stats">
+        <div><dt>Nové</dt><dd class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="opened" data-where="owner=Pavel Tran Son" data-fmt="int">—</dd></div>
+        <div><dt>Bilance (uzavřené − nové)</dt><dd class="lx-badge dash-skeleton" data-draw="m" data-source="scorecard" data-field="balance" data-where="owner=Pavel Tran Son" data-fmt="signed">—</dd></div>
+        <div><dt>Průměrná doba vyřízení (dny)</dt><dd class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="avgDays" data-where="owner=Pavel Tran Son" data-fmt="dec1">—</dd></div>
+        <div><dt>Otevřené teď / z toho přes lhůtu</dt><dd><span class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="backlog" data-where="owner=Pavel Tran Son" data-fmt="int">—</span> <span class="lx-muted">/</span> <span class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="backlogOld" data-where="owner=Pavel Tran Son" data-fmt="int">—</span></dd></div>
+      </dl>
+      <dl class="lx-stats">
+        <div><dt>Ø náklad na reklamaci</dt><dd class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="costPer" data-where="owner=Pavel Tran Son" data-fmt="eur">—</dd></div>
+        <div><dt>S prodlouženou lhůtou</dt><dd class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="extPct" data-where="owner=Pavel Tran Son" data-fmt="pct">—</dd></div>
+      </dl>
+      <div class="lx-pct"><div class="lx-pct-h"><span>Vyřízeno do <span data-draw="limit">—</span> dnů</span><b class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="pct30" data-where="owner=Pavel Tran Son" data-fmt="pct">—</b></div><div class="lx-track"><div class="lx-fill" data-draw="bar" data-source="scorecard" data-owner="Pavel Tran Son"></div></div></div>
+    </article>
+
+    <article class="lx-card lx-person" id="marco" data-oi="1">
+      <header class="lx-ph"><span class="lx-av">MS</span><div><h3>Marco Antonio Sinica</h3><p class="lx-sub">Od 1. 9. 2026</p></div></header>
+      <div class="lx-big"><span class="lx-bign dash-skeleton" data-draw="m" data-source="scorecard" data-field="closed" data-where="owner=Marco Antonio Sinica" data-fmt="int">—</span><span class="lx-bigl">uzavřených reklamací</span></div>
+      <dl class="lx-stats">
+        <div><dt>Nové</dt><dd class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="opened" data-where="owner=Marco Antonio Sinica" data-fmt="int">—</dd></div>
+        <div><dt>Bilance (uzavřené − nové)</dt><dd class="lx-badge dash-skeleton" data-draw="m" data-source="scorecard" data-field="balance" data-where="owner=Marco Antonio Sinica" data-fmt="signed">—</dd></div>
+        <div><dt>Průměrná doba vyřízení (dny)</dt><dd class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="avgDays" data-where="owner=Marco Antonio Sinica" data-fmt="dec1">—</dd></div>
+        <div><dt>Otevřené teď / z toho přes lhůtu</dt><dd><span class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="backlog" data-where="owner=Marco Antonio Sinica" data-fmt="int">—</span> <span class="lx-muted">/</span> <span class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="backlogOld" data-where="owner=Marco Antonio Sinica" data-fmt="int">—</span></dd></div>
+      </dl>
+      <dl class="lx-stats">
+        <div><dt>Ø náklad na reklamaci</dt><dd class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="costPer" data-where="owner=Marco Antonio Sinica" data-fmt="eur">—</dd></div>
+        <div><dt>S prodlouženou lhůtou</dt><dd class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="extPct" data-where="owner=Marco Antonio Sinica" data-fmt="pct">—</dd></div>
+      </dl>
+      <div class="lx-pct"><div class="lx-pct-h"><span>Vyřízeno do <span data-draw="limit">—</span> dnů</span><b class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="pct30" data-where="owner=Marco Antonio Sinica" data-fmt="pct">—</b></div><div class="lx-track"><div class="lx-fill" data-draw="bar" data-source="scorecard" data-owner="Marco Antonio Sinica"></div></div></div>
+    </article>
+
+    <article class="lx-card lx-person" id="krystof" data-oi="2">
+      <header class="lx-ph"><span class="lx-av">KV</span><div><h3>Kryštof Veber</h3><p class="lx-sub">Od 1. 9. 2026</p></div></header>
+      <div class="lx-big"><span class="lx-bign dash-skeleton" data-draw="m" data-source="scorecard" data-field="closed" data-where="owner=Kryštof Veber" data-fmt="int">—</span><span class="lx-bigl">uzavřených reklamací</span></div>
+      <dl class="lx-stats">
+        <div><dt>Nové</dt><dd class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="opened" data-where="owner=Kryštof Veber" data-fmt="int">—</dd></div>
+        <div><dt>Bilance (uzavřené − nové)</dt><dd class="lx-badge dash-skeleton" data-draw="m" data-source="scorecard" data-field="balance" data-where="owner=Kryštof Veber" data-fmt="signed">—</dd></div>
+        <div><dt>Průměrná doba vyřízení (dny)</dt><dd class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="avgDays" data-where="owner=Kryštof Veber" data-fmt="dec1">—</dd></div>
+        <div><dt>Otevřené teď / z toho přes lhůtu</dt><dd><span class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="backlog" data-where="owner=Kryštof Veber" data-fmt="int">—</span> <span class="lx-muted">/</span> <span class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="backlogOld" data-where="owner=Kryštof Veber" data-fmt="int">—</span></dd></div>
+      </dl>
+      <dl class="lx-stats">
+        <div><dt>Ø náklad na reklamaci</dt><dd class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="costPer" data-where="owner=Kryštof Veber" data-fmt="eur">—</dd></div>
+        <div><dt>S prodlouženou lhůtou</dt><dd class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="extPct" data-where="owner=Kryštof Veber" data-fmt="pct">—</dd></div>
+      </dl>
+      <div class="lx-pct"><div class="lx-pct-h"><span>Vyřízeno do <span data-draw="limit">—</span> dnů</span><b class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="pct30" data-where="owner=Kryštof Veber" data-fmt="pct">—</b></div><div class="lx-track"><div class="lx-fill" data-draw="bar" data-source="scorecard" data-owner="Kryštof Veber"></div></div></div>
+    </article>
+  </section>
+
+  <section class="lx-grid2" id="vyvoj">
+    <article class="lx-card" id="tydne">
+      <div class="lx-ct">
+        <div><h2>Reklamace po týdnech</h2><p class="lx-note">Počet za týden podle ownera; poslední týden ještě běží.</p></div>
+        <div class="lx-seg" role="group" aria-label="Zobrazit">
+          <button type="button" data-mode="closed" aria-pressed="true">Uzavřené</button>
+          <button type="button" data-mode="opened" aria-pressed="false">Nové</button>
+        </div>
+      </div>
+      <div class="lx-legend"><span data-oi="0"><i></i>Pavel</span><span data-oi="1"><i></i>Marco</span><span data-oi="2"><i></i>Kryštof</span></div>
+      <div class="lx-chart dash-skeleton" data-draw="weekly" data-source="weekly"></div>
+    </article>
+
+    <article class="lx-card" id="bilance">
+      <div class="lx-ct">
+        <div><h2>Kumulativní bilance</h2><p class="lx-note">Uzavřené minus nové, sčítané od 1. 9. Pod nulou backlog roste.</p></div>
+      </div>
+      <div class="lx-legend"><span data-oi="0"><i></i>Pavel</span><span data-oi="1"><i></i>Marco</span><span data-oi="2"><i></i>Kryštof</span></div>
+      <div class="lx-chart dash-skeleton" data-draw="balance" data-source="weekly"></div>
+    </article>
+  </section>
+
+  <section class="lx-grid2" id="rychlost">
+    <article class="lx-card">
+      <div><h2>Průměrná doba vyřízení</h2><p class="lx-note">Dny od přijetí reklamace do vyřešení, u reklamací uzavřených od 1. 9. Čárkovaně zákonná lhůta <span data-draw="limit">—</span> dnů.</p></div>
+      <div class="lx-chart lx-short dash-skeleton" data-draw="speed" data-source="scorecard"></div>
+    </article>
+
+    <article class="lx-card" id="srovnani">
+      <div><h2>Srovnání v číslech</h2><p class="lx-note">Všechny ukazatele vedle sebe.</p></div>
+      <div class="lx-tablebox">
+        <table class="lx-table" data-source="scorecard" data-row-key="owner">
+          <thead><tr>
+            <th data-field="owner">Owner</th>
+            <th data-field="opened">Nové</th>
+            <th data-field="closed">Uzavřené</th>
+            <th data-field="balance">Bilance</th>
+            <th data-field="avgDays">Ø dny</th>
+            <th data-field="pct30">Do lhůty</th>
+            <th data-field="backlog">Otevřené</th>
+            <th data-field="backlogOld">Přes lhůtu</th>
+            <th data-field="doneOpen">Done, neuzavř.</th>
+            <th data-field="extPct">Prodlouženo</th>
+            <th data-field="cost">Náklady €</th>
+            <th data-field="costPer">Ø € / rekl.</th>
+            <th data-field="seller">Od prodejce €</th>
+          </tr></thead>
+          <tbody data-draw="table"></tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+
+  <section class="lx-sec" id="reseni">
+    <div class="lx-sech"><h2>Jak se reklamace vyřešily</h2><p>Výsledek jednotlivých problémů (CPC) u reklamací uzavřených od 1. 9. Jedna reklamace může mít víc problémů.</p></div>
+    <article class="lx-card">
+      <div class="lx-legend">
+        <span data-sc="0"><i></i>Oprava</span>
+        <span data-sc="1"><i></i>Finanční kompenzace</span>
+        <span data-sc="2"><i></i>Neuznáno</span>
+        <span data-sc="3"><i></i>Uzavřeno na žádost zákazníka</span>
+        <span data-sc="4"><i></i>Ostatní (uznáno, na žádost Sales)</span>
+      </div>
+      <div class="lx-chart lx-short dash-skeleton" data-draw="resolution" data-source="resolution"></div>
+    </article>
+  </section>
+
+  <section class="lx-sec" id="naklady">
+    <div class="lx-sech"><h2>Náklady reklamací</h2><p>Součet nákladů na servis (Cost EUR) u reklamací uzavřených od 1. 9., včetně částek vymožených od prodejce.</p></div>
+    <article class="lx-card">
+      <div class="lx-costs">
+        <div class="lx-cost" data-oi="0">
+          <span class="lx-sub">Pavel · Ø na uzavřenou reklamaci</span>
+          <span class="lx-cost-n dash-skeleton" data-draw="m" data-source="scorecard" data-field="costPer" data-where="owner=Pavel Tran Son" data-fmt="eur">—</span>
+          <span class="lx-cost-l">Celkem <b class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="cost" data-where="owner=Pavel Tran Son" data-fmt="eur">—</b></span>
+          <span class="lx-cost-l">Vymoženo od prodejce <b class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="seller" data-where="owner=Pavel Tran Son" data-fmt="eur">—</b></span>
+        </div>
+        <div class="lx-cost" data-oi="1">
+          <span class="lx-sub">Marco · Ø na uzavřenou reklamaci</span>
+          <span class="lx-cost-n dash-skeleton" data-draw="m" data-source="scorecard" data-field="costPer" data-where="owner=Marco Antonio Sinica" data-fmt="eur">—</span>
+          <span class="lx-cost-l">Celkem <b class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="cost" data-where="owner=Marco Antonio Sinica" data-fmt="eur">—</b></span>
+          <span class="lx-cost-l">Vymoženo od prodejce <b class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="seller" data-where="owner=Marco Antonio Sinica" data-fmt="eur">—</b></span>
+        </div>
+        <div class="lx-cost" data-oi="2">
+          <span class="lx-sub">Kryštof · Ø na uzavřenou reklamaci</span>
+          <span class="lx-cost-n dash-skeleton" data-draw="m" data-source="scorecard" data-field="costPer" data-where="owner=Kryštof Veber" data-fmt="eur">—</span>
+          <span class="lx-cost-l">Celkem <b class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="cost" data-where="owner=Kryštof Veber" data-fmt="eur">—</b></span>
+          <span class="lx-cost-l">Vymoženo od prodejce <b class="dash-skeleton" data-draw="m" data-source="scorecard" data-field="seller" data-where="owner=Kryštof Veber" data-fmt="eur">—</b></span>
+        </div>
+      </div>
+    </article>
+    <article class="lx-card" id="zdroj">
+      <div><h2>Náklady podle zdroje problému</h2><p class="lx-note">Kdo nebo co reklamaci způsobilo (Problem Source), v EUR.</p></div>
+      <div class="lx-legend" data-draw="srcLegend" data-source="cost_source"></div>
+      <div class="lx-chart lx-short dash-skeleton" data-draw="costsrc" data-source="cost_source"></div>
+      <p class="lx-callout">Oprávněné reklamace, u kterých nejde bezpečně určit viníka (zdroj „Not a Problem“), stály <b data-draw="m" data-source="cost_nap" data-field="cost" data-row="0" data-fmt="eur" class="dash-skeleton">—</b>, tedy <b data-draw="m" data-source="cost_nap" data-field="share" data-row="0" data-fmt="pct" class="dash-skeleton">—</b> všech nákladů. Tyto náklady nejde přenést na žádný subjekt z číselníku viníků.</p>
+    </article>
+  </section>
+
+  <section class="lx-sec" id="typy">
+    <div class="lx-sech"><h2>Jaké problémy řeší</h2><p>Typy problémů (CPC) u reklamací přijatých od 1. 9.; procento je podíl z problémů daného ownera. Tmavší pole = větší podíl.</p></div>
+    <article class="lx-card">
+      <div class="lx-tablebox">
+        <table class="lx-table lx-heat" data-source="cpc_mix" data-row-key="type">
+          <thead><tr>
+            <th data-field="type">Typ problému</th>
+            <th data-field="p">Pavel</th>
+            <th data-field="m">Marco</th>
+            <th data-field="k">Kryštof</th>
+            <th data-field="total">Celkem</th>
+          </tr></thead>
+          <tbody data-draw="cpc"></tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+
+  <section class="lx-method" id="metodika">
+    <h2>Jak se počítá</h2>
+    <ul>
+      <li>Externí reklamace (Complaint, typ External) ze Salesforce, přiřazené aktuálnímu ownerovi.</li>
+      <li>Nové = záznam vytvořený od 1. 9. 2026. Uzavřené = první přechod do stavu Closed od 1. 9. 2026.</li>
+      <li>Nepočítají se hromadná zpětná uzavření reklamací, které byly vyřešené (Done) už před 1. 9.</li>
+      <li>Doba vyřízení = pole Open Days Real (od začátku reklamace do vyřešení). Lhůta se počítá včetně prodloužení.</li>
+      <li>Otevřené teď = reklamace, které nejsou ve stavu Done ani Closed, bez ohledu na datum vzniku.</li>
+      <li>Způsob vyřešení = stav jednotlivých problémů (CPC) u reklamací uzavřených od 1. 9. Problémy otevřených reklamací se nezapočítávají.</li>
+      <li>Náklady = pole Cost EUR (skutečná nebo očekávaná cena servisu), vymoženo od prodejce = Seller Participation (EUR bez DPH).</li>
+      <li>Zdroj „Not a Problem“ = oprávněná reklamace, u které nejde bezpečně určit, kdo ji způsobil (žádný subjekt z číselníku viníků).</li>
+      <li>Prodloužená lhůta = reklamace, u které je vyplněné prodloužení lhůty (Due Date Extension jiné než None).</li>
+      <li>Typy problémů = kategorie CPC u reklamací přijatých od 1. 9.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+(() => {
+  const OWNERS = ['Pavel Tran Son', 'Marco Antonio Sinica', 'Kryštof Veber'];
+  const LIMIT = 30;
+  const nf0 = new Intl.NumberFormat('cs-CZ', { maximumFractionDigits: 0 });
+  const nf1 = new Intl.NumberFormat('cs-CZ', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  let mode = 'closed';
+
+  const sfRows = ({ answer }) => {
+    let a = answer;
+    if (typeof a === 'string') {
+      try { a = JSON.parse(a); } catch (e) { throw new Error(a.slice(0, 300)); }
+    }
+    if (Array.isArray(a) && a.length && a[0] && a[0].message) throw new Error(a.map((x) => x.message).join('; '));
+    if (!a || !Array.isArray(a.records)) throw new Error('Unexpected answer; keys: ' + Object.keys(a || {}).join(', '));
+    const rows = a.records.map((r) => { const o = { ...r }; delete o.attributes; return o; });
+    const columns = rows.length ? Object.keys(rows[0]) : [];
+    return { columns, rows, cut: a.done === false };
+  };
+  const loaderDesc = 'Odpověď Salesforce (SOQL) jako řádky, bez technického pole attributes.';
+  dash.loader('opened_daily', { description: loaderDesc, fn: sfRows });
+  dash.loader('closed_daily', { description: loaderDesc, fn: sfRows });
+  dash.loader('closed_stats', { description: loaderDesc, fn: sfRows });
+  dash.loader('closed_30', { description: loaderDesc, fn: sfRows });
+  dash.loader('backlog', { description: loaderDesc, fn: sfRows });
+  dash.loader('backlog_30', { description: loaderDesc, fn: sfRows });
+  dash.loader('done_open', { description: loaderDesc, fn: sfRows });
+  dash.loader('resolution', { description: loaderDesc, fn: sfRows });
+  dash.loader('cost_source', { description: loaderDesc, fn: sfRows });
+  dash.loader('extension', { description: loaderDesc, fn: sfRows });
+  dash.loader('cpc_types', { description: loaderDesc, fn: sfRows });
+
+  dash.calc('cost_nap', {
+    title: 'Náklady „Not a Problem“',
+    description: 'Součet nákladů u reklamací se zdrojem Not a Problem a jeho podíl na všech nákladech.',
+    inputs: ['cost_source'],
+    fn: (cost_source) => {
+      const all = cost_source.reduce((s, r) => s + Number(r.cost || 0), 0);
+      const nap = cost_source.filter((r) => r.source === 'not-a-problem').reduce((s, r) => s + Number(r.cost || 0), 0);
+      return [{ cost: Math.round(nap), share: all ? Math.round((1000 * nap) / all) / 10 : 0 }];
+    },
+  });
+
+  dash.calc('cpc_mix', {
+    title: 'Typy problémů po ownerech',
+    description: 'Počet problémů každého typu na ownera a jejich podíl z ownerových problémů.',
+    inputs: ['cpc_types'],
+    fn: (cpc_types) => {
+      const keys = { 'Pavel Tran Son': 'p', 'Marco Antonio Sinica': 'm', 'Kryštof Veber': 'k' };
+      const tot = { p: 0, m: 0, k: 0 };
+      cpc_types.forEach((r) => { const k = keys[r.owner]; if (k) tot[k] += Number(r.cnt); });
+      const by = new Map();
+      cpc_types.forEach((r) => {
+        const k = keys[r.owner]; if (!k) return;
+        const t = r.type || 'none';
+        const e = by.get(t) || { type: t, p: 0, m: 0, k: 0, total: 0 };
+        e[k] += Number(r.cnt); e.total += Number(r.cnt);
+        by.set(t, e);
+      });
+      return [...by.values()].map((e) => ({
+        ...e,
+        p_share: tot.p ? Math.round((1000 * e.p) / tot.p) / 10 : 0,
+        m_share: tot.m ? Math.round((1000 * e.m) / tot.m) / 10 : 0,
+        k_share: tot.k ? Math.round((1000 * e.k) / tot.k) / 10 : 0,
+      })).sort((a, b) => b.total - a.total);
+    },
+  });
+
+  dash.calc('scorecard', {
+    title: 'Ukazatele po ownerech',
+    description: 'Spojí počty nových, uzavřených a otevřených reklamací, náklady a prodloužení lhůt do jednoho řádku na ownera.',
+    inputs: ['opened_daily', 'closed_stats', 'closed_30', 'backlog', 'backlog_30', 'done_open', 'extension', 'cost_source'],
+    fn: (opened_daily, closed_stats, closed_30, backlog, backlog_30, done_open, extension, cost_source) => {
+      const owners = ['Pavel Tran Son', 'Marco Antonio Sinica', 'Kryštof Veber'];
+      const one = (rows, o) => rows.find((r) => r.owner === o) || {};
+      return owners.map((o) => {
+        const st = one(closed_stats, o);
+        const closed = Number(st.cnt || 0);
+        const opened = opened_daily.filter((r) => r.owner === o).reduce((s, r) => s + Number(r.cnt), 0);
+        const within30 = Number(one(closed_30, o).cnt || 0);
+        const ext = extension.filter((r) => r.owner === o);
+        const extAll = ext.reduce((s, r) => s + Number(r.cnt), 0);
+        const extYes = ext.filter((r) => r.ext && r.ext !== 'none').reduce((s, r) => s + Number(r.cnt), 0);
+        const seller = cost_source.filter((r) => r.owner === o).reduce((s, r) => s + Number(r.seller || 0), 0);
+        const cost = Number(st.cost || 0);
+        return {
+          extPct: extAll ? Math.round((1000 * extYes) / extAll) / 10 : 0,
+          costPer: closed ? Math.round(cost / closed) : 0,
+          seller: Math.round(seller),
+          owner: o,
+          opened,
+          closed,
+          balance: closed - opened,
+          avgDays: Math.round(Number(st.avgDays || 0) * 10) / 10,
+          maxDays: Number(st.maxDays || 0),
+          within30,
+          pct30: closed ? Math.round((1000 * within30) / closed) / 10 : 0,
+          backlog: Number(one(backlog, o).cnt || 0),
+          backlogOld: Number(one(backlog_30, o).cnt || 0),
+          doneOpen: Number(one(done_open, o).cnt || 0),
+          cost: Math.round(Number(st.cost || 0)),
+        };
+      });
+    },
+  });
+
+  dash.calc('weekly', {
+    title: 'Nové a uzavřené po týdnech',
+    description: 'Sečte denní počty nových a uzavřených reklamací do týdnů (od pondělí).',
+    inputs: ['opened_daily', 'closed_daily'],
+    fn: (opened_daily, closed_daily) => {
+      const monday = (day) => {
+        const d = new Date(String(day).slice(0, 10) + 'T00:00:00Z');
+        d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+        return d.toISOString().slice(0, 10);
+      };
+      const m = new Map();
+      const add = (rows, key) => rows.forEach((r) => {
+        const w = monday(r.day);
+        const k = w + '|' + r.owner;
+        const e = m.get(k) || { week: w, owner: r.owner, opened: 0, closed: 0 };
+        e[key] += Number(r.cnt);
+        m.set(k, e);
+      });
+      add(opened_daily, 'opened');
+      add(closed_daily, 'closed');
+      return [...m.values()].sort((a, b) => a.week.localeCompare(b.week) || a.owner.localeCompare(b.owner));
+    },
+  });
+
+  dash.calc('highlights', {
+    title: 'Kdo vyčnívá',
+    description: 'Kdo uzavřel nejvíc, kdo vyřizuje nejrychleji a komu backlog roste nejvíc.',
+    inputs: ['scorecard'],
+    fn: (scorecard) => {
+      if (!scorecard.length) return [];
+      const by = (f, dir) => [...scorecard].sort((a, b) => dir * (a[f] - b[f]))[0].owner;
+      return [{ mostClosed: by('closed', -1), fastest: by('avgDays', 1), worstBalance: by('balance', 1) }];
+    },
+  });
+
+  document.querySelectorAll('[data-oi]').forEach((e) => e.style.setProperty('--c', dash.colors[Number(e.dataset.oi)]));
+
+  const colorOf = (o) => dash.colors[Math.max(0, OWNERS.indexOf(o))];
+  const first = (o) => String(o).split(' ')[0];
+  const fmt = (v, f) => {
+    if (v == null || Number.isNaN(v)) return '—';
+    if (f === 'text') return String(v);
+    if (f === 'dec1') return nf1.format(v);
+    if (f === 'pct') return nf1.format(v) + ' %';
+    if (f === 'eur') return nf0.format(v) + ' €';
+    if (f === 'signed') return (v > 0 ? '+' : '') + nf0.format(v);
+    return nf0.format(v);
+  };
+  const pick = (rows, el) => {
+    if (el.dataset.row != null) return rows[Number(el.dataset.row)];
+    const where = (el.dataset.where || '').split('&').filter(Boolean).map((p) => p.split('=').map(decodeURIComponent));
+    return rows.find((r) => where.every(([k, v]) => String(r[k]) === v));
+  };
+  const failLine = (el, status) => {
+    el.classList.toggle('dash-skeleton', status === 'loading');
+    if (status === 'loading') { el.replaceChildren(); return; }
+    const p = document.createElement('div'); p.className = 'lx-fail';
+    const dot = document.createElement('span'); dot.className = 'lx-fail-dot';
+    const t = document.createElement('span'); t.textContent = 'Nepodařilo se načíst';
+    p.append(dot, t);
+    el.replaceChildren(p);
+  };
+  const measure = (svg, strings, cls) => {
+    const g = svg.append('g');
+    let w = 0;
+    strings.forEach((s) => { const t = g.append('text').attr('class', cls || 'lx-tick').text(s); w = Math.max(w, t.node().getComputedTextLength()); });
+    g.remove();
+    return w;
+  };
+  const makeTip = (el) => { const t = document.createElement('div'); t.className = 'lx-tip'; t.hidden = true; el.append(t); return t; };
+  const fillTip = (t, title, lines) => {
+    const h = document.createElement('div'); h.className = 'lx-tip-h'; h.textContent = title;
+    const ls = lines.map((l) => {
+      const r = document.createElement('div'); r.className = 'lx-tip-r';
+      const s = document.createElement('span'); s.className = 'lx-sw'; s.style.background = l.color;
+      const n = document.createElement('span'); n.textContent = l.name;
+      const v = document.createElement('b'); v.textContent = l.value;
+      r.append(s, n, v); return r;
+    });
+    t.replaceChildren(h, ...ls); t.hidden = false;
+  };
+  const placeTip = (el, t, px, py) => {
+    const w = t.offsetWidth, h = t.offsetHeight, W = el.clientWidth;
+    let x = px + 14; if (x + w > W) x = px - 14 - w; if (x < 0) x = 0;
+    let y = py - h - 8; if (y < 0) y = py + 14;
+    t.style.left = x + 'px'; t.style.top = y + 'px';
+  };
+  const weekLabel = (w) => {
+    const d = new Date((w < '2026-09-01' ? '2026-09-01' : w) + 'T00:00:00Z');
+    return d.getUTCDate() + '. ' + (d.getUTCMonth() + 1) + '.';
+  };
+  const weekTitle = (w) => {
+    const s = new Date((w < '2026-09-01' ? '2026-09-01' : w) + 'T00:00:00Z');
+    const e = new Date(w + 'T00:00:00Z'); e.setUTCDate(e.getUTCDate() + 6);
+    return 'Týden ' + s.getUTCDate() + '. ' + (s.getUTCMonth() + 1) + '. – ' + e.getUTCDate() + '. ' + (e.getUTCMonth() + 1) + '.';
+  };
+
+  dash.draw('limit', (el) => { el.textContent = String(LIMIT); });
+
+  dash.draw('m', (el) => {
+    const d = dash.data(el.dataset.source);
+    if (d.status !== 'ok') {
+      el.textContent = '—';
+      el.classList.toggle('dash-skeleton', d.status === 'loading');
+      el.classList.remove('pos', 'neg');
+      return;
+    }
+    el.classList.remove('dash-skeleton');
+    const row = pick(d.data || [], el);
+    const v = row ? row[el.dataset.field] : null;
+    el.textContent = fmt(v, el.dataset.fmt);
+    if (el.dataset.fmt === 'signed') { el.classList.toggle('pos', v > 0); el.classList.toggle('neg', v < 0); }
+  });
+
+  dash.draw('bar', (el) => {
+    const d = dash.data('scorecard');
+    const row = d.status === 'ok' ? (d.data || []).find((r) => r.owner === el.dataset.owner) : null;
+    el.style.width = row ? Math.max(0, Math.min(100, row.pct30)) + '%' : '0';
+  });
+
+  dash.draw('weekly', (el) => {
+    const d = dash.data('weekly');
+    if (d.status !== 'ok') return failLine(el, d.status);
+    el.classList.remove('dash-skeleton');
+    const rows = d.data || [];
+    const weeks = [...new Set(rows.map((r) => r.week))].sort();
+    const val = (w, o) => { const r = rows.find((q) => q.week === w && q.owner === o); return r ? r[mode] : 0; };
+    const W = Math.max(280, el.clientWidth), H = 260, mb = 26, mt = 10, mr = 6;
+    const max = d3.max(weeks, (w) => d3.max(OWNERS, (o) => val(w, o))) || 1;
+    const y = d3.scaleLinear([0, max], [H - mb, mt]).nice();
+    const svg = d3.create('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('class', 'lx-svg');
+    el.replaceChildren(svg.node());
+    const ticks = y.ticks(4);
+    const ml = 10 + measure(svg, ticks.map((t) => nf0.format(t)));
+    const x0 = d3.scaleBand(weeks, [ml, W - mr]).paddingInner(0.28).paddingOuter(0.05);
+    const x1 = d3.scaleBand(OWNERS, [0, x0.bandwidth()]).padding(0.1);
+    const bw = Math.min(x1.bandwidth(), 32), off = (x1.bandwidth() - bw) / 2;
+    svg.append('g').selectAll('line').data(ticks).join('line').attr('class', (t) => (t === 0 ? 'lx-axis' : 'lx-grid'))
+      .attr('x1', ml).attr('x2', W - mr).attr('y1', (t) => y(t)).attr('y2', (t) => y(t));
+    svg.append('g').selectAll('text').data(ticks).join('text').attr('class', 'lx-tick').attr('x', ml - 8).attr('y', (t) => y(t)).attr('dy', '0.32em').attr('text-anchor', 'end').text((t) => nf0.format(t));
+    const groups = svg.append('g').selectAll('g').data(weeks).join('g').attr('transform', (w) => `translate(${x0(w)},0)`);
+    groups.selectAll('rect').data((w) => OWNERS.map((o) => ({ w, o, v: val(w, o) }))).join('rect')
+      .attr('x', (p) => x1(p.o) + off).attr('width', bw)
+      .attr('y', (p) => y(p.v)).attr('height', (p) => Math.max(0, y(0) - y(p.v)))
+      .attr('rx', Math.min(3, bw / 2)).style('fill', (p) => colorOf(p.o));
+    const every = Math.max(1, Math.ceil(46 / x0.step()));
+    svg.append('g').selectAll('text').data(weeks.filter((w, i) => i % every === 0)).join('text').attr('class', 'lx-tick')
+      .attr('x', (w) => x0(w) + x0.bandwidth() / 2).attr('y', H - 6).attr('text-anchor', 'middle').text(weekLabel);
+    const tip = makeTip(el);
+    svg.append('g').selectAll('rect').data(weeks).join('rect').attr('class', 'lx-hit')
+      .attr('x', (w) => x0(w) - (x0.step() - x0.bandwidth()) / 2).attr('width', x0.step()).attr('y', mt).attr('height', H - mb - mt)
+      .on('mousemove', (event, w) => {
+        groups.classed('lx-dim', (g) => g !== w);
+        fillTip(tip, weekTitle(w) + (mode === 'closed' ? ' · uzavřené' : ' · nové'), OWNERS.map((o) => ({ color: colorOf(o), name: first(o), value: nf0.format(val(w, o)) })));
+        const [px, py] = d3.pointer(event, el);
+        placeTip(el, tip, px, py);
+      })
+      .on('mouseleave', () => { groups.classed('lx-dim', false); tip.hidden = true; });
+  });
+
+  dash.draw('balance', (el) => {
+    const d = dash.data('weekly');
+    if (d.status !== 'ok') return failLine(el, d.status);
+    el.classList.remove('dash-skeleton');
+    const rows = d.data || [];
+    const weeks = [...new Set(rows.map((r) => r.week))].sort();
+    const series = OWNERS.map((o) => {
+      let c = 0;
+      return { o, pts: weeks.map((w) => { const r = rows.find((q) => q.week === w && q.owner === o); c += r ? r.closed - r.opened : 0; return { w, v: c }; }) };
+    });
+    const all = series.flatMap((s) => s.pts.map((p) => p.v));
+    const W = Math.max(280, el.clientWidth), H = 260, mb = 26, mt = 12;
+    const y = d3.scaleLinear([Math.min(0, d3.min(all)), Math.max(0, d3.max(all))], [H - mb, mt]).nice();
+    const svg = d3.create('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('class', 'lx-svg');
+    el.replaceChildren(svg.node());
+    const ticks = y.ticks(5);
+    const sfmt = (v) => (v > 0 ? '+' : '') + nf0.format(v);
+    const ml = 10 + measure(svg, ticks.map(sfmt));
+    const ends = series.map((s) => ({ o: s.o, v: s.pts.length ? s.pts[s.pts.length - 1].v : 0 }));
+    const mr = 14 + measure(svg, ends.map((e) => first(e.o) + ' ' + sfmt(e.v)), 'lx-lab');
+    const x = d3.scalePoint(weeks, [ml, W - mr]).padding(0.3);
+    svg.append('g').selectAll('line').data(ticks).join('line').attr('class', (t) => (t === 0 ? 'lx-axis' : 'lx-grid'))
+      .attr('x1', ml).attr('x2', W - mr).attr('y1', (t) => y(t)).attr('y2', (t) => y(t));
+    svg.append('g').selectAll('text').data(ticks).join('text').attr('class', 'lx-tick').attr('x', ml - 8).attr('y', (t) => y(t)).attr('dy', '0.32em').attr('text-anchor', 'end').text(sfmt);
+    const every = Math.max(1, Math.ceil(46 / Math.max(1, x.step())));
+    svg.append('g').selectAll('text').data(weeks.filter((w, i) => i % every === 0)).join('text').attr('class', 'lx-tick')
+      .attr('x', (w) => x(w)).attr('y', H - 6).attr('text-anchor', 'middle').text(weekLabel);
+    const line = d3.line().x((p) => x(p.w)).y((p) => y(p.v));
+    const lines = svg.append('g').selectAll('g').data(series).join('g');
+    lines.append('path').attr('d', (s) => line(s.pts)).attr('fill', 'none').style('stroke', (s) => colorOf(s.o))
+      .attr('stroke-width', 2.5).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round');
+    lines.selectAll('circle').data((s) => s.pts.map((p) => ({ ...p, o: s.o }))).join('circle')
+      .attr('cx', (p) => x(p.w)).attr('cy', (p) => y(p.v)).attr('r', 3).style('fill', (p) => colorOf(p.o));
+    const labs = ends.map((e) => ({ ...e, y: y(e.v) })).sort((a, b) => a.y - b.y);
+    for (let i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 15) labs[i].y = labs[i - 1].y + 15;
+    const lastX = weeks.length ? x(weeks[weeks.length - 1]) : ml;
+    svg.append('g').selectAll('text').data(labs).join('text').attr('class', 'lx-lab').attr('x', lastX + 8).attr('y', (l) => l.y).attr('dy', '0.32em')
+      .style('fill', (l) => colorOf(l.o)).text((l) => first(l.o) + ' ' + sfmt(l.v));
+    const tip = makeTip(el);
+    const hover = svg.append('line').attr('class', 'lx-ref').attr('y1', mt).attr('y2', H - mb).style('display', 'none');
+    svg.append('rect').attr('class', 'lx-hit').attr('x', ml).attr('width', Math.max(0, W - mr - ml)).attr('y', mt).attr('height', H - mb - mt)
+      .on('mousemove', (event) => {
+        const [mx] = d3.pointer(event);
+        const w = weeks.reduce((best, k) => (Math.abs(x(k) - mx) < Math.abs(x(best) - mx) ? k : best), weeks[0]);
+        if (!w) return;
+        hover.style('display', null).attr('x1', x(w)).attr('x2', x(w));
+        fillTip(tip, 'Stav k týdnu ' + weekLabel(w), series.map((s) => ({ color: colorOf(s.o), name: first(s.o), value: sfmt(s.pts.find((p) => p.w === w).v) })));
+        const [px, py] = d3.pointer(event, el);
+        placeTip(el, tip, px, py);
+      })
+      .on('mouseleave', () => { hover.style('display', 'none'); tip.hidden = true; });
+  });
+
+  dash.draw('speed', (el) => {
+    const d = dash.data('scorecard');
+    if (d.status !== 'ok') return failLine(el, d.status);
+    el.classList.remove('dash-skeleton');
+    const rows = OWNERS.map((o) => (d.data || []).find((r) => r.owner === o)).filter(Boolean);
+    const W = Math.max(280, el.clientWidth), rowH = 40, mt = 22, H = mt + rows.length * rowH + 6;
+    const svg = d3.create('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('class', 'lx-svg');
+    el.replaceChildren(svg.node());
+    const dl = (v) => nf1.format(v) + ' dne';
+    const ml = 12 + measure(svg, rows.map((r) => first(r.owner)), 'lx-lab');
+    const mr = 10 + measure(svg, rows.map((r) => dl(r.avgDays)), 'lx-lab');
+    const x = d3.scaleLinear([0, Math.max(LIMIT, d3.max(rows, (r) => r.avgDays) || 0) * 1.08], [ml, W - mr]);
+    const y = (i) => mt + i * rowH;
+    const bh = Math.min(24, rowH - 12);
+    rows.forEach((r, i) => {
+      svg.append('rect').attr('x', ml).attr('y', y(i) + (rowH - bh) / 2).attr('width', Math.max(0, W - mr - ml)).attr('height', bh).attr('rx', 3).style('fill', 'var(--cds-chart-grid)');
+      svg.append('rect').attr('x', ml).attr('y', y(i) + (rowH - bh) / 2).attr('width', Math.max(0, x(r.avgDays) - ml)).attr('height', bh).attr('rx', 3).style('fill', colorOf(r.owner));
+      svg.append('text').attr('class', 'lx-lab').attr('x', ml - 10).attr('y', y(i) + rowH / 2).attr('dy', '0.32em').attr('text-anchor', 'end').text(first(r.owner));
+      svg.append('text').attr('class', 'lx-lab').attr('x', x(r.avgDays) + 6).attr('y', y(i) + rowH / 2).attr('dy', '0.32em').text(dl(r.avgDays));
+    });
+    svg.append('line').attr('class', 'lx-ref').attr('x1', x(LIMIT)).attr('x2', x(LIMIT)).attr('y1', mt - 4).attr('y2', H - 4);
+    svg.append('text').attr('class', 'lx-tick').attr('x', x(LIMIT)).attr('y', mt - 9).attr('text-anchor', 'middle').text(LIMIT + ' dní');
+  });
+
+  dash.draw('table', (el) => {
+    const d = dash.data('scorecard');
+    if (d.status !== 'ok') { el.replaceChildren(); return; }
+    const cols = [['opened', 'int'], ['closed', 'int'], ['balance', 'signed'], ['avgDays', 'dec1'], ['pct30', 'pct'], ['backlog', 'int'], ['backlogOld', 'int'], ['doneOpen', 'int'], ['extPct', 'pct'], ['cost', 'int'], ['costPer', 'int'], ['seller', 'int']];
+    el.replaceChildren(...OWNERS.map((o) => (d.data || []).find((r) => r.owner === o)).filter(Boolean).map((r) => {
+      const tr = document.createElement('tr');
+      const td0 = document.createElement('td');
+      const own = document.createElement('span'); own.className = 'lx-own';
+      const sw = document.createElement('span'); sw.className = 'lx-sw'; sw.style.background = colorOf(r.owner);
+      const nm = document.createElement('span'); nm.textContent = r.owner;
+      own.append(sw, nm); td0.append(own); tr.append(td0);
+      cols.forEach(([f, k]) => {
+        const td = document.createElement('td'); td.textContent = fmt(r[f], k);
+        if (f === 'balance') { td.classList.toggle('pos', r[f] > 0); td.classList.toggle('neg', r[f] < 0); }
+        tr.append(td);
+      });
+      return tr;
+    }));
+  });
+
+  const STATUS_COLORS = [dash.colors[3], dash.colors[4], dash.colors[6], dash.colors[5], 'var(--cds-chart-muted)'];
+  const STATUS_NAMES = ['Oprava', 'Finanční kompenzace', 'Neuznáno', 'Na žádost zákazníka', 'Ostatní'];
+  const statusGroup = (s) => ({ 'repaired': 0, 'financially-compensated': 1, 'not-acknowledged': 2, 'closed-at-customers-request': 3 }[s] ?? 4);
+  document.querySelectorAll('[data-sc]').forEach((e) => e.style.setProperty('--c', STATUS_COLORS[Number(e.dataset.sc)]));
+
+  const SOURCES = [
+    ['not-a-problem', 'Viník neurčen (Not a Problem)', dash.colors[7]],
+    ['vendor', 'Prodejce', dash.colors[3]],
+    ['carvago-error', 'Chyba Carvago', dash.colors[5]],
+    ['auditor-error', 'Chyba auditora', dash.colors[4]],
+    ['transport', 'Doprava', dash.colors[6]],
+    ['both', 'Auditor i Carvago', 'var(--cds-chart-muted)'],
+    ['Preparation', 'Příprava', 'var(--cds-chart-muted)'],
+    ['', 'Nevyplněno', 'var(--cds-chart-grid)'],
+  ];
+  const srcOf = (v) => SOURCES.find((s) => s[0] === (v || '')) || [v, String(v), 'var(--cds-chart-muted)'];
+  const TYPES = { 'brakes': 'Brzdy', 'chassis': 'Podvozek', 'compensable': 'Kompenzovatelné', 'electronics': 'Elektronika', 'engine': 'Motor', 'exterior-cosmetics': 'Exteriér – kosmetika', 'interior': 'Interiér', 'transmission-drivetrain': 'Převodovka a pohon', 'other': 'Ostatní', 'none': 'Bez kategorie' };
+
+  dash.draw('today', (el) => {
+    const d = new Date();
+    el.textContent = d.getDate() + '. ' + (d.getMonth() + 1) + '. ' + d.getFullYear();
+  });
+
+  const stackChart = (el, groups, colorFn, nameFn, valFmt, endFmt, percent) => {
+    const W = Math.max(280, el.clientWidth), rowH = 46, mt = 6, H = mt + groups.length * rowH;
+    const svg = d3.create('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('class', 'lx-svg');
+    el.replaceChildren(svg.node());
+    const ml = 12 + measure(svg, groups.map((g) => first(g.owner)), 'lx-lab');
+    const mr = 10 + measure(svg, groups.map((g) => endFmt(g.total)), 'lx-lab');
+    const maxT = percent ? 1 : (d3.max(groups, (g) => g.total) || 1);
+    const x = d3.scaleLinear([0, maxT], [ml, W - mr]);
+    const bh = 26;
+    const tip = makeTip(el);
+    groups.forEach((g, i) => {
+      const yy = mt + i * rowH + (rowH - bh) / 2;
+      let acc = 0;
+      svg.append('text').attr('class', 'lx-lab').attr('x', ml - 10).attr('y', yy + bh / 2).attr('dy', '0.32em').attr('text-anchor', 'end').text(first(g.owner));
+      g.parts.forEach((p) => {
+        const v = percent ? p.v / (g.total || 1) : p.v;
+        const x0 = x(acc), x1 = x(acc + v);
+        acc += v;
+        const w = Math.max(0, x1 - x0 - 1.5);
+        svg.append('rect').attr('x', x0).attr('y', yy).attr('width', w).attr('height', bh).attr('rx', 2).style('fill', colorFn(p.k))
+          .on('mousemove', (event) => {
+            fillTip(tip, g.owner, [{ color: colorFn(p.k), name: nameFn(p.k), value: valFmt(p.v) + ' · ' + nf1.format((100 * p.v) / (g.total || 1)) + ' %' }]);
+            const [px, py] = d3.pointer(event, el); placeTip(el, tip, px, py);
+          })
+          .on('mouseleave', () => { tip.hidden = true; });
+        const share = p.v / (g.total || 1);
+        if (w > 38 && share >= 0.06) {
+          svg.append('text').attr('class', 'lx-tick').attr('x', x0 + w / 2).attr('y', yy + bh / 2).attr('dy', '0.32em').attr('text-anchor', 'middle')
+            .style('fill', 'var(--color-bg)').style('pointer-events', 'none').text(nf0.format(100 * share) + ' %');
+        }
+      });
+      svg.append('text').attr('class', 'lx-lab').attr('x', x(percent ? 1 : g.total) + 8).attr('y', yy + bh / 2).attr('dy', '0.32em').text(endFmt(g.total));
+    });
+  };
+
+  dash.draw('resolution', (el) => {
+    const d = dash.data('resolution');
+    if (d.status !== 'ok') return failLine(el, d.status);
+    el.classList.remove('dash-skeleton');
+    const rows = d.data || [];
+    const groups = OWNERS.map((o) => {
+      const parts = [0, 1, 2, 3, 4].map((k) => ({ k, v: rows.filter((r) => r.owner === o && statusGroup(r.status) === k).reduce((s, r) => s + Number(r.cnt), 0) }));
+      return { owner: o, parts, total: d3.sum(parts, (p) => p.v) };
+    });
+    stackChart(el, groups, (k) => STATUS_COLORS[k], (k) => STATUS_NAMES[k], (v) => nf0.format(v) + ' CPC', (t) => nf0.format(t) + ' CPC', true);
+  });
+
+  dash.draw('srcLegend', (el) => {
+    const d = dash.data('cost_source');
+    if (d.status !== 'ok') { el.replaceChildren(); return; }
+    const present = new Set((d.data || []).filter((r) => Number(r.cost || 0) > 0).map((r) => r.source || ''));
+    el.replaceChildren(...SOURCES.filter((s) => present.has(s[0])).map((s) => {
+      const sp = document.createElement('span'); const i = document.createElement('i'); i.style.background = s[2];
+      const t = document.createElement('span'); t.textContent = s[1]; sp.append(i, t); return sp;
+    }));
+  });
+
+  dash.draw('costsrc', (el) => {
+    const d = dash.data('cost_source');
+    if (d.status !== 'ok') return failLine(el, d.status);
+    el.classList.remove('dash-skeleton');
+    const rows = d.data || [];
+    const order = SOURCES.map((s) => s[0]);
+    const groups = OWNERS.map((o) => {
+      const mine = rows.filter((r) => r.owner === o && Number(r.cost || 0) > 0);
+      const parts = mine.map((r) => ({ k: r.source || '', v: Number(r.cost || 0) }))
+        .sort((a, b) => (order.indexOf(a.k) + 99 * (order.indexOf(a.k) < 0)) - (order.indexOf(b.k) + 99 * (order.indexOf(b.k) < 0)));
+      return { owner: o, parts, total: d3.sum(parts, (p) => p.v) };
+    });
+    stackChart(el, groups, (k) => srcOf(k)[2], (k) => srcOf(k)[1], (v) => nf0.format(v) + ' €', (t) => nf0.format(t) + ' €', false);
+  });
+
+  dash.draw('cpc', (el) => {
+    const d = dash.data('cpc_mix');
+    if (d.status !== 'ok') { el.replaceChildren(); return; }
+    const owners = [['p', 0], ['m', 1], ['k', 2]];
+    el.replaceChildren(...(d.data || []).map((r) => {
+      const tr = document.createElement('tr'); tr.dataset.key = r.type;
+      const td0 = document.createElement('td'); td0.textContent = TYPES[r.type] || r.type; tr.append(td0);
+      owners.forEach(([k, i]) => {
+        const td = document.createElement('td'); td.className = 'lx-cell';
+        const share = r[k + '_share'];
+        td.style.background = `color-mix(in srgb, ${dash.colors[i]} ${Math.min(85, Math.round(share * 2.4))}%, transparent)`;
+        const n = document.createElement('span'); n.textContent = nf0.format(r[k]);
+        const p = document.createElement('span'); p.className = 'lx-pctl'; p.textContent = nf1.format(share) + ' %';
+        td.append(n, p); tr.append(td);
+      });
+      const tt = document.createElement('td'); tt.textContent = nf0.format(r.total); tr.append(tt);
+      return tr;
+    }));
+  });
+
+  const ALL_SOURCES = ['opened_daily', 'closed_daily', 'closed_stats', 'closed_30', 'backlog', 'backlog_30', 'done_open', 'resolution', 'cost_source', 'extension', 'cpc_types'];
+  document.querySelectorAll('.lx-refresh').forEach((btn) => btn.addEventListener('click', () => {
+    btn.disabled = true;
+    ALL_SOURCES.forEach((id) => dash.refresh(id));
+    setTimeout(() => { btn.disabled = false; }, 4000);
+  }));
+
+  document.querySelectorAll('.lx-seg button').forEach((b) => b.addEventListener('click', () => {
+    mode = b.dataset.mode;
+    document.querySelectorAll('.lx-seg button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    dash.draw('weekly');
+  }));
+})();
+</script>
+
+<p class="lx-foot">Statický snímek dat ze Salesforce ke 2. 11. 2026, 10:20. Externí reklamace (Complaint, typ External), owneři Pavel Tran Son, Marco Antonio Sinica a Kryštof Veber.</p>
+</div>
+<script>
+document.querySelectorAll('.dash-skeleton').forEach((e) => e.classList.remove('dash-skeleton'));
+dash._runAll();
+let lxT; window.addEventListener('resize', () => { clearTimeout(lxT); lxT = setTimeout(dash._runAll, 150); });
+</script>
+</body>
+</html>

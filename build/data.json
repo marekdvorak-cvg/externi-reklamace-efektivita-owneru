@@ -574,6 +574,11 @@
    "owner": "Pavel Tran Son",
    "day": "2026-11-06",
    "cnt": 4
+  },
+  {
+   "owner": "Marco Antonio Sinica",
+   "day": "2026-11-09",
+   "cnt": 3
   }
  ],
  "closed_daily": [
@@ -1197,7 +1202,7 @@
   },
   {
    "owner": "Marco Antonio Sinica",
-   "cnt": 14
+   "cnt": 17
   },
   {
    "owner": "Kryštof Veber",

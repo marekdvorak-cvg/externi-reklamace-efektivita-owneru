@@ -726,14 +726,29 @@
    "cnt": 1
   },
   {
+   "owner": "Pavel Tran Son",
+   "day": "2026-11-24",
+   "cnt": 2
+  },
+  {
    "owner": "Kryštof Veber",
    "day": "2026-11-25",
    "cnt": 2
   },
   {
+   "owner": "Pavel Tran Son",
+   "day": "2026-11-25",
+   "cnt": 4
+  },
+  {
    "owner": "Marco Antonio Sinica",
    "day": "2026-11-26",
-   "cnt": 3
+   "cnt": 7
+  },
+  {
+   "owner": "Pavel Tran Son",
+   "day": "2026-11-26",
+   "cnt": 2
   }
  ],
  "closed_daily": [
@@ -1441,22 +1456,32 @@
    "owner": "Pavel Tran Son",
    "day": "2026-11-25",
    "cnt": 1
+  },
+  {
+   "owner": "Marco Antonio Sinica",
+   "day": "2026-11-26",
+   "cnt": 3
+  },
+  {
+   "owner": "Pavel Tran Son",
+   "day": "2026-11-26",
+   "cnt": 6
   }
  ],
  "closed_stats": [
   {
    "owner": "Pavel Tran Son",
-   "cnt": 218,
-   "avgDays": 14.963302752293577,
+   "cnt": 224,
+   "avgDays": 14.973214285714286,
    "maxDays": 100,
-   "cost": 48557.76
+   "cost": 49061.82
   },
   {
    "owner": "Marco Antonio Sinica",
-   "cnt": 183,
-   "avgDays": 10.989071038251366,
+   "cnt": 186,
+   "avgDays": 10.919354838709678,
    "maxDays": 99,
-   "cost": 54172.64
+   "cost": 55163.65
   },
   {
    "owner": "Kryštof Veber",
@@ -1469,11 +1494,11 @@
  "closed_30": [
   {
    "owner": "Pavel Tran Son",
-   "cnt": 196
+   "cnt": 201
   },
   {
    "owner": "Marco Antonio Sinica",
-   "cnt": 172
+   "cnt": 175
   },
   {
    "owner": "Kryštof Veber",
@@ -1483,21 +1508,21 @@
  "backlog": [
   {
    "owner": "Pavel Tran Son",
-   "cnt": 41
+   "cnt": 42
   },
   {
    "owner": "Marco Antonio Sinica",
-   "cnt": 20
+   "cnt": 21
   },
   {
    "owner": "Kryštof Veber",
-   "cnt": 25
+   "cnt": 22
   }
  ],
  "backlog_30": [
   {
    "owner": "Pavel Tran Son",
-   "cnt": 8
+   "cnt": 7
   },
   {
    "owner": "Kryštof Veber",
@@ -1507,11 +1532,11 @@
  "done_open": [
   {
    "owner": "Pavel Tran Son",
-   "cnt": 9
+   "cnt": 10
   },
   {
    "owner": "Kryštof Veber",
-   "cnt": 6
+   "cnt": 9
   }
  ],
  "resolution": [
@@ -1523,7 +1548,7 @@
   {
    "owner": "Pavel Tran Son",
    "status": "closed-at-customers-request",
-   "cnt": 28
+   "cnt": 29
   },
   {
    "owner": "Marco Antonio Sinica",
@@ -1533,7 +1558,7 @@
   {
    "owner": "Marco Antonio Sinica",
    "status": "not-acknowledged",
-   "cnt": 116
+   "cnt": 117
   },
   {
    "owner": "Pavel Tran Son",
@@ -1553,12 +1578,12 @@
   {
    "owner": "Pavel Tran Son",
    "status": "not-acknowledged",
-   "cnt": 102
+   "cnt": 104
   },
   {
    "owner": "Marco Antonio Sinica",
    "status": "repaired",
-   "cnt": 59
+   "cnt": 63
   },
   {
    "owner": "Kryštof Veber",
@@ -1568,7 +1593,7 @@
   {
    "owner": "Pavel Tran Son",
    "status": "repaired",
-   "cnt": 51
+   "cnt": 52
   },
   {
    "owner": "Kryštof Veber",
@@ -1578,16 +1603,16 @@
   {
    "owner": "Pavel Tran Son",
    "status": "financially-compensated",
-   "cnt": 79
+   "cnt": 81
   }
  ],
  "cost_source": [
   {
    "owner": "Pavel Tran Son",
    "source": "vendor",
-   "cnt": 45,
-   "cost": 13268.55,
-   "seller": 8460.34
+   "cnt": 48,
+   "cost": 13604.55,
+   "seller": 8712.34
   },
   {
    "owner": "Kryštof Veber",
@@ -1613,8 +1638,8 @@
   {
    "owner": "Marco Antonio Sinica",
    "source": "carvago-error",
-   "cnt": 8,
-   "cost": 4452.74,
+   "cnt": 10,
+   "cost": 5230.9,
    "seller": null
   },
   {
@@ -1634,8 +1659,8 @@
   {
    "owner": "Marco Antonio Sinica",
    "source": "not-a-problem",
-   "cnt": 156,
-   "cost": 30574.35,
+   "cnt": 157,
+   "cost": 30787.2,
    "seller": null
   },
   {
@@ -1655,8 +1680,8 @@
   {
    "owner": "Pavel Tran Son",
    "source": "not-a-problem",
-   "cnt": 168,
-   "cost": 25915.51,
+   "cnt": 171,
+   "cost": 26083.57,
    "seller": null
   }
  ],
@@ -1674,22 +1699,22 @@
   {
    "owner": "Marco Antonio Sinica",
    "ext": "needed",
-   "cnt": 38
+   "cnt": 39
   },
   {
    "owner": "Marco Antonio Sinica",
    "ext": "none",
-   "cnt": 145
+   "cnt": 147
   },
   {
    "owner": "Pavel Tran Son",
    "ext": "needed",
-   "cnt": 60
+   "cnt": 63
   },
   {
    "owner": "Pavel Tran Son",
    "ext": "none",
-   "cnt": 158
+   "cnt": 161
   }
  ],
  "cpc_types": [
@@ -1731,7 +1756,7 @@
   {
    "owner": "Marco Antonio Sinica",
    "type": "electronics",
-   "cnt": 31
+   "cnt": 33
   },
   {
    "owner": "Kryštof Veber",
@@ -1741,7 +1766,7 @@
   {
    "owner": "Pavel Tran Son",
    "type": "electronics",
-   "cnt": 44
+   "cnt": 46
   },
   {
    "owner": "Kryštof Veber",
@@ -1751,7 +1776,7 @@
   {
    "owner": "Pavel Tran Son",
    "type": "engine",
-   "cnt": 37
+   "cnt": 39
   },
   {
    "owner": "Kryštof Veber",
@@ -1761,7 +1786,7 @@
   {
    "owner": "Marco Antonio Sinica",
    "type": "interior",
-   "cnt": 13
+   "cnt": 14
   },
   {
    "owner": "Marco Antonio Sinica",
@@ -1771,17 +1796,17 @@
   {
    "owner": "Pavel Tran Son",
    "type": "other",
-   "cnt": 63
+   "cnt": 64
   },
   {
    "owner": "Marco Antonio Sinica",
    "type": "engine",
-   "cnt": 66
+   "cnt": 67
   },
   {
    "owner": "Pavel Tran Son",
    "type": "interior",
-   "cnt": 11
+   "cnt": 12
   },
   {
    "owner": "Pavel Tran Son",
@@ -1816,7 +1841,7 @@
   {
    "owner": "Pavel Tran Son",
    "type": "compensable",
-   "cnt": 36
+   "cnt": 38
   },
   {
    "owner": "Kryštof Veber",
